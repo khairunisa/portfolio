@@ -14,7 +14,7 @@ const projects = defineCollection({
     z.object({
       title: z.string(),
       /** One or two sentences shown on the card. */
-      summary: z.string().max(220),
+      summary: z.string().max(240),
       status: z.enum(['released', 'in-development']),
       /** Release year, or the year work started for in-development projects. */
       year: z.number().int(),
