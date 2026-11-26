@@ -3,7 +3,7 @@ title: Lokapala
 summary: A 5v5 mobile MOBA by Anantarupa Studios, inspired by Southeast Asian cultures and stories, with heroes drawn from regional myths.
 status: released
 year: 2020
-role: Programmer
+role: UI & Backend Programmer
 tags: [Mobile, MOBA, Multiplayer]
 order: 1
 cover: ./cover.jpg

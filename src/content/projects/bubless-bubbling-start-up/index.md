@@ -1,10 +1,10 @@
 ---
 title: Bubless Bubbling Start-up
-summary: A game made for Global Game Jam 2025 around the jam theme "Bubble".
+summary: A board game made for Global Game Jam 2025 around the jam theme "Bubble".
 status: released
 year: 2025
 role: Designer
-tags: [Game jam, Global Game Jam]
+tags: [Board Game, Game jam, Global Game Jam]
 order: 5
 cover: ./cover.png
 coverAlt: Bubless Bubbling Start-up title art

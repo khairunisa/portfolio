@@ -3,7 +3,7 @@ title: WILDBOUNDS
 summary: "Three animals, one way to survive the life after humans. An isometric puzzle-platformer made in 14 days for Jam for the Planet 2025: switch between Boar, Beaver and Monkey to solve each level."
 status: released
 year: 2025
-role: Game programmer (team of 5)
+role: Programmer
 tags: [Unity, Game jam, Puzzle platformer, Browser]
 order: 4
 cover: ./cover.png
