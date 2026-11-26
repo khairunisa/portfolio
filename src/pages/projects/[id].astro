@@ -1,0 +1,153 @@
+---
+import { render } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Carousel from '../../components/Carousel.astro';
+import StoreLinks from '../../components/StoreLinks.astro';
+import { getProjects, gallery, statusLabel, type Project } from '../../lib/projects';
+import { site } from '../../site.config';
+
+// Only projects with a written body get their own page.
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects
+    .filter((p) => p.body?.trim())
+    .map((project) => ({ params: { id: project.id }, props: { project } }));
+}
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+const og = await getImage({ src: data.cover, width: 1200, format: 'jpg' });
+---
+
+<Base title={`${data.title} — ${site.name}`} description={data.summary} image={og.src}>
+  <main class="wrap">
+    <nav class="back"><a href="/#projects">All projects</a></nav>
+
+    <header class="head">
+      <p class={`status status--${data.status}`}>{statusLabel(project)}</p>
+      <h1>{data.title}</h1>
+      <p class="role">{data.role}</p>
+      <p class="summary">{data.summary}</p>
+      <StoreLinks links={data.links} title={data.title} />
+    </header>
+
+    <div class="media">
+      <Carousel images={gallery(project)} label={data.title} eager sizes="(min-width: 1240px) 1180px, 100vw" />
+    </div>
+
+    <div class="layout">
+      <article class="prose">
+        <Content />
+      </article>
+      {data.tags.length > 0 && (
+        <aside>
+          <h2>Built with</h2>
+          <ul class="tags">
+            {data.tags.map((t) => <li>{t}</li>)}
+          </ul>
+        </aside>
+      )}
+    </div>
+  </main>
+</Base>
+
+<style>
+  .back {
+    padding-top: 2rem;
+    font-weight: 700;
+    font-size: var(--step--1);
+  }
+
+  .head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding-block: 2.5rem 2rem;
+  }
+  .head p {
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(2.8rem, 8vw, 5.5rem);
+    font-weight: 800;
+    font-stretch: 78%;
+    line-height: 0.9;
+  }
+  .role {
+    color: var(--muted);
+  }
+  .summary {
+    max-width: 58ch;
+    font-size: var(--step-1);
+    line-height: 1.45;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .media {
+    margin-bottom: 3.5rem;
+  }
+
+  .layout {
+    display: grid;
+    gap: 2.5rem;
+  }
+  @media (min-width: 900px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr) 16rem;
+    }
+  }
+
+  aside h2 {
+    font-size: var(--step-0);
+    margin-bottom: 0.75rem;
+  }
+
+  .prose {
+    max-width: 68ch;
+  }
+  .prose :global(h2) {
+    font-size: var(--step-2);
+    font-stretch: 88%;
+    margin: 2.2rem 0 0.8rem;
+  }
+  .prose :global(h3) {
+    font-size: var(--step-1);
+    margin: 1.8rem 0 0.6rem;
+  }
+  .prose :global(p),
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 0 0 1.1rem;
+  }
+  .prose :global(> :first-child) {
+    margin-top: 0;
+  }
+  .prose :global(code) {
+    font-size: 0.9em;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 0.05em 0.35em;
+    border-radius: 5px;
+  }
+  .prose :global(pre) {
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+  .prose :global(pre code) {
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+  .prose :global(img) {
+    border-radius: var(--radius-media);
+  }
+</style>

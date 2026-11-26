@@ -1,0 +1,142 @@
+---
+// A single full-screen viewer shared by every carousel on the page.
+---
+
+<dialog class="lightbox" data-lightbox aria-label="Screenshot viewer">
+  <img data-lightbox-img alt="" />
+  <p class="caption" data-lightbox-caption></p>
+  <button type="button" class="close" data-lightbox-close aria-label="Close viewer">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+  </button>
+  <button type="button" class="step step--prev" data-lightbox-prev aria-label="Previous screenshot">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+  </button>
+  <button type="button" class="step step--next" data-lightbox-next aria-label="Next screenshot">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+  </button>
+</dialog>
+
+<style>
+  .lightbox {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: clamp(1rem, 4vw, 3rem);
+    border: 0;
+    background: #10151e;
+    color: #fff;
+  }
+  .lightbox[open] {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    place-items: center;
+    gap: 0.75rem;
+  }
+  .lightbox::backdrop {
+    background: transparent;
+  }
+  img {
+    max-width: 100%;
+    max-height: calc(100dvh - 7rem);
+    object-fit: contain;
+    border-radius: 8px;
+  }
+  .caption {
+    margin: 0;
+    font-size: var(--step--1);
+    color: rgb(255 255 255 / 0.75);
+    text-align: center;
+  }
+  button {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.12);
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover {
+    background: rgb(255 255 255 / 0.24);
+  }
+  button[hidden] {
+    display: none;
+  }
+  svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .close {
+    top: 1rem;
+    right: 1rem;
+  }
+  .step {
+    top: 50%;
+    translate: 0 -50%;
+  }
+  .step--prev {
+    left: 1rem;
+  }
+  .step--next {
+    right: 1rem;
+  }
+</style>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox]')!;
+  const img = dialog.querySelector<HTMLImageElement>('[data-lightbox-img]')!;
+  const caption = dialog.querySelector<HTMLElement>('[data-lightbox-caption]')!;
+  const prev = dialog.querySelector<HTMLButtonElement>('[data-lightbox-prev]')!;
+  const next = dialog.querySelector<HTMLButtonElement>('[data-lightbox-next]')!;
+
+  let set: HTMLButtonElement[] = [];
+  let index = 0;
+  let opener: HTMLElement | null = null;
+
+  const show = (i: number) => {
+    index = (i + set.length) % set.length;
+    const btn = set[index];
+    img.src = btn.dataset.full!;
+    img.alt = btn.dataset.alt ?? '';
+    caption.textContent = `${btn.dataset.alt ? btn.dataset.alt + ' — ' : ''}${index + 1} of ${set.length}`;
+  };
+
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.zoom[data-full]');
+    if (!btn) return;
+    const carousel = btn.closest('[data-carousel]');
+    set = carousel ? [...carousel.querySelectorAll<HTMLButtonElement>('.zoom[data-full]')] : [btn];
+    opener = btn;
+    prev.hidden = next.hidden = set.length < 2;
+    show(set.indexOf(btn));
+    dialog.showModal();
+  });
+
+  prev.addEventListener('click', () => show(index - 1));
+  next.addEventListener('click', () => show(index + 1));
+  dialog.querySelector('[data-lightbox-close]')!.addEventListener('click', () => dialog.close());
+
+  // Click on the dark area closes it.
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+
+  dialog.addEventListener('keydown', (e) => {
+    if (set.length < 2) return;
+    if (e.key === 'ArrowLeft') show(index - 1);
+    if (e.key === 'ArrowRight') show(index + 1);
+  });
+
+  // Return focus to the screenshot that opened it.
+  dialog.addEventListener('close', () => opener?.focus());
+</script>

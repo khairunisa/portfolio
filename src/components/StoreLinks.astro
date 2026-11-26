@@ -1,0 +1,46 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon, { type IconName } from './Icon.astro';
+
+interface Props {
+  links: CollectionEntry<'projects'>['data']['links'];
+  title: string;
+}
+
+const { links, title } = Astro.props;
+
+// The first available link becomes the filled (primary) button.
+const items = [
+  links.itch && { href: links.itch, label: 'Play on itch.io', icon: 'itch' },
+  links.playStore && { href: links.playStore, label: 'Get it on Google Play', icon: 'googleplay' },
+  links.website && { href: links.website, label: 'Website', icon: 'globe' },
+  links.trailer && { href: links.trailer, label: 'Watch trailer', icon: 'video' },
+].filter(Boolean) as { href: string; label: string; icon: IconName }[];
+---
+
+{
+  items.length > 0 && (
+    <div class="store-links">
+      {items.map((item, i) => (
+        <a
+          class:list={['btn', { 'btn--primary': i === 0 }]}
+          href={item.href}
+          target="_blank"
+          rel="noopener"
+          aria-label={`${item.label}: ${title} (opens in a new tab)`}
+        >
+          <Icon name={item.icon} />
+          {item.label}
+        </a>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .store-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>

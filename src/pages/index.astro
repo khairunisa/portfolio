@@ -1,0 +1,266 @@
+---
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import Icon, { type IconName } from '../components/Icon.astro';
+import { getProjects } from '../lib/projects';
+import { site } from '../site.config';
+
+const projects = await getProjects();
+const featured = projects.filter((p) => p.data.featured);
+const rest = projects.filter((p) => !p.data.featured);
+
+const count = {
+  all: projects.length,
+  released: projects.filter((p) => p.data.status === 'released').length,
+  'in-development': projects.filter((p) => p.data.status === 'in-development').length,
+};
+
+const contact = [
+  site.links.itch && { href: site.links.itch, label: 'itch.io', icon: 'itch' },
+  site.links.playStore && { href: site.links.playStore, label: 'Google Play', icon: 'googleplay' },
+  site.links.github && { href: site.links.github, label: 'GitHub', icon: 'github' },
+  site.links.gitlab && { href: site.links.gitlab, label: 'GitLab', icon: 'gitlab' },
+  site.links.linkedin && { href: site.links.linkedin, label: 'LinkedIn', icon: 'linkedin' },
+  site.links.email && { href: `mailto:${site.links.email}`, label: 'Email', icon: 'email' },
+].filter(Boolean) as { href: string; label: string; icon: IconName }[];
+---
+
+<Base>
+  <header class="topbar wrap">
+    <div>
+      <p class="name">{site.name}</p>
+      <p class="tagline">{site.role}, based in {site.location}</p>
+    </div>
+    <ul class="contact">
+      {contact.map((c) => <li><a href={c.href} aria-label={c.label} title={c.label}><Icon name={c.icon} /></a></li>)}
+    </ul>
+  </header>
+
+  <main class="wrap" id="projects">
+    <div class="bar">
+      <h2>Projects</h2>
+      <div class="filters" role="group" aria-label="Filter projects" data-filters hidden>
+        <button type="button" class="btn" data-filter="all" aria-pressed="true">All <span>{count.all}</span></button>
+        {count.released > 0 && (
+          <button type="button" class="btn" data-filter="released" aria-pressed="false">
+            Released <span>{count.released}</span>
+          </button>
+        )}
+        {count['in-development'] > 0 && (
+          <button type="button" class="btn" data-filter="in-development" aria-pressed="false">
+            In development <span>{count['in-development']}</span>
+          </button>
+        )}
+      </div>
+    </div>
+
+    {projects.length === 0 && (
+      <p class="empty">No projects yet. Add a folder to <code>src/content/projects/</code> to show your first one.</p>
+    )}
+
+    {featured.length > 0 && (
+      <div class="featured">
+        {featured.map((p) => <ProjectCard project={p} featured />)}
+      </div>
+    )}
+
+    <div class="grid">
+      {rest.map((p) => <ProjectCard project={p} />)}
+    </div>
+
+    <p class="no-match" data-no-match hidden>No projects in this category yet.</p>
+  </main>
+
+  <section class="about wrap" id="about" aria-labelledby="about-title">
+    <h2 id="about-title">About</h2>
+    <div class="about-body">
+      <p class="headline">{site.headline}</p>
+      <p class="intro">{site.intro}</p>
+      <ul class="contact">
+        {contact.map((c) => <li><a href={c.href} aria-label={c.label} title={c.label}><Icon name={c.icon} /></a></li>)}
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    padding-block: 1.25rem;
+    position: relative;
+  }
+  /* Dividers line up with the content, not the padded container edge */
+  .topbar::after,
+  .about::before {
+    content: '';
+    position: absolute;
+    left: var(--gutter);
+    right: var(--gutter);
+    border-top: 1px solid var(--line);
+  }
+  .topbar::after {
+    bottom: 0;
+  }
+  .about::before {
+    top: 0;
+  }
+  .name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-weight: 700;
+    font-size: var(--step--1);
+  }
+  .contact a {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 1.25rem;
+    transition: color 0.15s, background-color 0.15s;
+  }
+  .contact a:hover,
+  .contact a:focus-visible {
+    color: var(--ink);
+    background: var(--line);
+  }
+  .contact {
+    gap: 0.25rem;
+  }
+
+  .tagline {
+    margin: 0.15rem 0 0;
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+  .topbar {
+    align-items: center;
+  }
+
+  .about {
+    display: grid;
+    gap: 1.25rem 3rem;
+    margin-top: 6rem;
+    padding-top: 1.5rem;
+    position: relative;
+  }
+  @media (min-width: 900px) {
+    .about {
+      grid-template-columns: 14rem 1fr;
+    }
+  }
+  .about-body {
+    max-width: 52ch;
+  }
+  .headline {
+    margin: 0 0 1rem;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: 700;
+    font-stretch: 88%;
+    line-height: 1.1;
+  }
+  .intro {
+    margin: 0 0 1.25rem;
+    color: var(--muted);
+  }
+  .about .contact {
+    font-size: var(--step-0);
+  }
+
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 2.5rem;
+  }
+  .bar h2,
+  .about h2 {
+    font-size: var(--step-3);
+    font-stretch: 85%;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .filters:not([hidden]) {
+    display: flex;
+  }
+  .filters .btn {
+    border-color: var(--line);
+  }
+  .filters .btn span {
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .filters .btn[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+  .filters .btn[aria-pressed='true'] span,
+  .filters .btn:hover span {
+    color: inherit;
+  }
+
+  .featured {
+    display: grid;
+    gap: 4rem;
+    margin-bottom: 4.5rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 3.5rem clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .empty,
+  .no-match {
+    color: var(--muted);
+  }
+</style>
+
+<script>
+  const group = document.querySelector<HTMLElement>('[data-filters]');
+  if (group) {
+    group.hidden = false; // filters only appear when JS is available
+    const buttons = [...group.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+    const cards = [...document.querySelectorAll<HTMLElement>('.project')];
+    const noMatch = document.querySelector<HTMLElement>('[data-no-match]')!;
+
+    const apply = (value: string) => {
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === value)));
+      let shown = 0;
+      cards.forEach((c) => {
+        const match = value === 'all' || c.dataset.status === value;
+        c.hidden = !match;
+        if (match) shown++;
+      });
+      noMatch.hidden = shown > 0;
+    };
+
+    buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.filter!)));
+  }
+</script>
